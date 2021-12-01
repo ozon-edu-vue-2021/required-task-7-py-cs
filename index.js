@@ -1,5 +1,9 @@
-const listsElement = document.getElementById("lists");
-const personElement = document.getElementById("person");
+const containerElement = document.getElementById("container");
+const personElement = document.querySelector(".background");
+const backToListElement = document.querySelector(".back");
+const listViewElement = document.querySelector(".contacts-list");
+const detailsViewElement = document.querySelector(".details-view");
+const contactTemplateElement = document.querySelector(".contact-template");
 
 const FRIENDS = "friends";
 const NOTFRIENDS = "notfriends";
@@ -7,6 +11,7 @@ const POPULARS = "populars";
 
 let people;
 let ids;
+let userElement;
 
 const lists = [FRIENDS, NOTFRIENDS, POPULARS].reduce((acc, list) => {
   return {
@@ -29,14 +34,6 @@ const updateList = (listType, ids) => {
 const getPopulars = () => Object.entries(people)
     .sort((a, b) => b[1].friendedBy - a[1].friendedBy || a[1].name.localeCompare(b[1].name))
     .map(person => person[0]);
-
-const changePerson = (id) => {
-  if (!id) return;
-  personElement.textContent = getNameById(id);
-  const { friends, notfriends } = people[id]
-  updateList(FRIENDS, friends);
-  updateList(NOTFRIENDS, notfriends);
-};
 
 const processData = (data) => {
   ids = data.map(person => person.id);
@@ -62,8 +59,40 @@ const getData = async () => {
   return fetch('data.json').then(res => res.json());
 };
 
+const showDetailsView = () => {
+  containerElement.classList.add("details");
+}
+
+const showListView = () => {
+  containerElement.classList.remove("details");
+  userElement.removeAttribute("style");
+}
+
+const populateContacts = () => {
+  Object.keys(people).forEach(personId => {
+    const contactNode = document.createElement("li");
+    contactNode.textContent = people[personId].name;
+    contactNode.dataset.id = personId;
+    listViewElement.append(contactNode)
+  })
+}
+
+handleUserSelect = e => {
+  userElement = e.target.closest("li");
+  userElement.style.transform = "translate3d(40px, 0, 40px)";
+  userElement.style.opacity = "1";
+  const { id } = e.target.dataset;
+  if (!id) return;
+  showDetailsView();
+  personElement.textContent = getNameById(id);
+  const { friends, notfriends } = people[id]
+  updateList(FRIENDS, friends);
+  updateList(NOTFRIENDS, notfriends);
+};
+
 getData().then(processData).then(() => {
+  populateContacts();
   updateList(POPULARS, getPopulars());
-  changePerson(1);
-  listsElement.onclick = (e) => changePerson(e.target.dataset.id);
+  listViewElement.onclick = handleUserSelect;
+  backToListElement.onclick = showListView;
 });
