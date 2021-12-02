@@ -9,7 +9,6 @@ const NOTFRIENDS = "notfriends";
 const POPULARS = "populars";
 
 let people;
-let ids;
 let userElement;
 
 const lists = [FRIENDS, NOTFRIENDS, POPULARS].reduce((acc, list) => {
@@ -30,24 +29,21 @@ const updateList = (listType, ids) => {
 
 const getPopulars = () => Object.entries(people)
     .sort((a, b) => b[1].friendedBy - a[1].friendedBy || a[1].name.localeCompare(b[1].name))
+    .slice(0, 3)
     .map(person => person[0]);
 
 const processData = (data) => {
-  ids = data.map(person => person.id);
+  const total = data.length;
   people = data.reduce((acc, { id, name, friends }) => {
     if (!acc[id]) acc[id] = {};
     acc[id].name = name;
     acc[id].friends = friends;
-    acc[id].notfriends = new Set(ids);
-    acc[id].notfriends.delete(id);
     friends.forEach(friend => {
       if (!acc[friend]) {
         acc[friend] = {}
       }
-      acc[id].notfriends.delete(friend);
       acc[friend].friendedBy = (acc[friend].friendedBy || 0) + 1;
     });
-    acc[id].notfriends = [...acc[id].notfriends]
     return acc
   }, {});
 };
@@ -74,6 +70,18 @@ const populateContacts = () => {
   })
 }
 
+const getNotFriends = (id) => {
+  const { friends } = people[id];
+  const notfriends = []
+  for (idx in people) {
+    if (!friends.includes(idx) && idx !== id) notfriends.push(idx);
+    if (notfriends.length === 3) {
+      people[id].notfriends = notfriends;
+      return notfriends;
+    }
+  }
+}
+
 handleUserSelect = e => {
   const { id } = e.target.dataset;
   if (!id) return;
@@ -82,7 +90,7 @@ handleUserSelect = e => {
   showDetailsView();
   const { friends, notfriends } = people[id]
   updateList(FRIENDS, friends);
-  updateList(NOTFRIENDS, notfriends);
+  updateList(NOTFRIENDS, notfriends || getNotFriends(id));
 };
 
 getData().then(processData).then(() => {
