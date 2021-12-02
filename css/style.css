@@ -299,3 +299,8 @@ li.people-title {
   font-weight: bold;
   font-size: larger;
 }
+
+#container .list-view .contacts-list li.selected {
+  transform: translate3d(40px, 0, 0);
+  opacity: 1;
+}

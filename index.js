@@ -1,5 +1,4 @@
 const containerElement = document.getElementById("container");
-const personElement = document.querySelector(".background");
 const backToListElement = document.querySelector(".back");
 const listViewElement = document.querySelector(".contacts-list");
 const detailsViewElement = document.querySelector(".details-view");
@@ -25,9 +24,7 @@ const getNameById = (id) => people[id].name;
 const updateList = (listType, ids) => {
   const list = lists[listType];
   [...list].forEach((el, idx) => {
-    const id = ids[idx];
-    el.textContent = getNameById(id);
-    el.dataset.id = id;
+    el.textContent = getNameById(ids[idx]);
   });
 };
 
@@ -65,7 +62,7 @@ const showDetailsView = () => {
 
 const showListView = () => {
   containerElement.classList.remove("details");
-  userElement.removeAttribute("style");
+  userElement.classList.remove("selected");
 }
 
 const populateContacts = () => {
@@ -78,13 +75,11 @@ const populateContacts = () => {
 }
 
 handleUserSelect = e => {
-  userElement = e.target.closest("li");
-  userElement.style.transform = "translate3d(40px, 0, 40px)";
-  userElement.style.opacity = "1";
   const { id } = e.target.dataset;
   if (!id) return;
+  userElement = e.target.closest("li");
+  userElement.classList.add("selected");
   showDetailsView();
-  personElement.textContent = getNameById(id);
   const { friends, notfriends } = people[id]
   updateList(FRIENDS, friends);
   updateList(NOTFRIENDS, notfriends);
